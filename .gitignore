@@ -1,0 +1,107 @@
+# ============================================================================
+# Secrets — NEVER commit these
+# ============================================================================
+.env
+.env.local
+.env.*.local
+.env.production
+*.pem
+*.key
+
+# ============================================================================
+# Python / Backend
+# ============================================================================
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# Type checkers / linters
+.mypy_cache/
+.ruff_cache/
+.pyre/
+
+# ============================================================================
+# ML artefacts — these are large binary files that get regenerated
+# ============================================================================
+backend/model_artifacts/
+*.pt
+*.pth
+*.ckpt
+
+# Hugging Face dataset cache (gets re-downloaded by seed script if needed)
+~/.cache/huggingface/
+
+# ============================================================================
+# Node / Frontend
+# ============================================================================
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Vite cache
+frontend/.vite/
+
+# ============================================================================
+# Editor / OS
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+# Logs
+# ============================================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================================================
+# Alembic — keep migrations/versions/ but allow exclusions if needed
+# (the versions folder is intentionally committed — it's part of the schema history)
+# ============================================================================
+# Nothing to exclude here under normal operation. Migration .py files MUST
+# be committed so Render's release phase can apply them on deploy.

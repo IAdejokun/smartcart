@@ -1,0 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: theme("colors.gray.50");
+  color: theme("colors.gray.900");
+}
+
+/* === Landing page animations — scoped to the landing route via classnames === */
+
+@keyframes landingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes landingScaleStrip {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.landing-fade-up {
+  opacity: 0;
+  animation: landingFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-fade-in {
+  opacity: 0;
+  animation: landingFadeIn 0.6s ease-out forwards;
+}
+
+.landing-strip-grow {
+  transform-origin: left;
+  animation: landingScaleStrip 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Delay utilities — applied alongside the animation class for staggered reveals */
+.landing-delay-100 { animation-delay: 100ms; }
+.landing-delay-200 { animation-delay: 200ms; }
+.landing-delay-300 { animation-delay: 300ms; }
+.landing-delay-400 { animation-delay: 400ms; }
+.landing-delay-500 { animation-delay: 500ms; }
+.landing-delay-700 { animation-delay: 700ms; }
+.landing-delay-900 { animation-delay: 900ms; }
+
+/* Respect reduced motion — same accessibility rule as the portfolio */
+@media (prefers-reduced-motion: reduce) {
+  .landing-fade-up,
+  .landing-fade-in,
+  .landing-strip-grow {
+    animation-duration: 0.01ms !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
