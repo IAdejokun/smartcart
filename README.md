@@ -17,7 +17,7 @@ retrains the agent, and the dashboard measures whether it's working.
 
 The agent observes user behaviour (views, clicks, cart events), produces
 ranked recommendations via a Deep Q-Network, and updates its policy from
-real reward signals — all in a working e-commerce frontend a non-technical
+real reward signals all in a working e-commerce frontend a non-technical
 visitor can use without knowing any of this is happening.
 
 ## Architecture
