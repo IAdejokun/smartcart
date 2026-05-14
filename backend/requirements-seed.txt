@@ -1,0 +1,14 @@
+# === Seed-only dependencies — NOT installed during normal deploy ===
+# Run once from Render Shell:
+#   pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-seed.txt
+#   python -m scripts.seed_amazon_catalogue
+
+datasets==3.0.1
+pandas==3.0.2
+pyarrow==24.0.0
+huggingface_hub==1.13.0
+hf-xet==1.4.3
+fsspec==2024.6.1
+xxhash==3.7.0
+multiprocess==0.70.16
+dill==0.3.8
