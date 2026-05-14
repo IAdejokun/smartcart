@@ -1,18 +1,11 @@
-"""Seed the products table with a curated mini-catalogue from Amazon Reviews 2023.
+"""Seed the products table from Amazon Reviews 2023.
 
-Strategy:
-- Pull metadata for 5 categories that have visual product cards (so the storefront
-  looks good): Electronics, Books, Home_and_Kitchen, Beauty_and_Personal_Care,
-  Toys_and_Games.
-- Take the top ~160 products per category by review count (= popularity bias).
-- ~800 products total. Small enough that DRL learning is visible during demos,
-  large enough that the storefront doesn't feel toy.
+Can be run:
+  - As a script: python -m scripts.seed_amazon_catalogue
+  - As a function: from scripts.seed_amazon_catalogue import seed; seed()
 
-Source: McAuley Lab Amazon Reviews 2023 (Hugging Face datasets).
-https://amazon-reviews-2023.github.io/
-
-Run from backend/:
-    python -m scripts.seed_amazon_catalogue
+The seed is idempotent — checks for existing products first and skips
+if the catalogue is already populated.
 """
 from __future__ import annotations
 
@@ -43,7 +36,6 @@ PRODUCTS_PER_CATEGORY = 160
 
 
 def fetch_category(category: str, limit: int) -> list[dict]:
-    """Loads top-`limit` products by review count from a category."""
     from datasets import load_dataset
 
     log.info("Loading metadata stream for category=%s", category)
@@ -72,8 +64,6 @@ def fetch_category(category: str, limit: int) -> list[dict]:
         if price <= 0 or price > 5000:
             continue
 
-        # Amazon Reviews 2023 images schema: dict-of-lists with parallel arrays
-        # for thumb/large/hi_res/variant. We want the first 'large' URL.
         images = row.get("images") or {}
         image_urls = images.get("large") or images.get("thumb") or []
         primary_image = image_urls[0] if image_urls else None
@@ -97,25 +87,29 @@ def fetch_category(category: str, limit: int) -> list[dict]:
     candidates.sort(key=lambda r: r["review_count"], reverse=True)
     return candidates[:limit]
 
+
 def seed() -> None:
+    """Run the catalogue seed. Safe to call multiple times — skips if already seeded."""
     db = SessionLocal()
     try:
         existing = db.scalar(select(func.count()).select_from(Product)) or 0
         if existing > 0:
-            log.info("Products table already has %d rows — skipping seed", existing)
-            log.info("To force reseed, truncate the table first.")
+            log.info(
+                "Products table already has %d rows — skipping seed. "
+                "To force reseed, truncate the products table first.",
+                existing,
+            )
             return
 
+        log.info("Starting catalogue seed — this takes 5–10 minutes on first run.")
         all_products: list[dict] = []
         for category in CATEGORIES:
             rows = fetch_category(category, PRODUCTS_PER_CATEGORY)
             log.info("  → %d products selected from %s", len(rows), category)
             all_products.extend(rows)
 
-        random.shuffle(all_products)                     # avoid category-clumped insertion order
+        random.shuffle(all_products)
 
-        # Bulk upsert with on_conflict — survives partial reruns gracefully.
-        # We insert in chunks so a single bad row doesn't roll back the lot.
         CHUNK = 100
         for i in range(0, len(all_products), CHUNK):
             chunk = all_products[i : i + CHUNK]
@@ -130,7 +124,7 @@ def seed() -> None:
         log.info("✓ Seed complete. Catalogue size: %d products.", total)
 
     except KeyboardInterrupt:
-        log.warning("Seed interrupted by user")
+        log.warning("Seed interrupted")
         db.rollback()
         sys.exit(1)
     except Exception:
