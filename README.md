@@ -17,7 +17,7 @@ retrains the agent, and the dashboard measures whether it's working.
 
 The agent observes user behaviour (views, clicks, cart events), produces
 ranked recommendations via a Deep Q-Network, and updates its policy from
-real reward signals — all in a working e-commerce frontend a non-technical
+real reward signals all in a working e-commerce frontend a non-technical
 visitor can use without knowing any of this is happening.
 
 ## Architecture
@@ -33,12 +33,12 @@ visitor can use without knowing any of this is happening.
 
 ## What's interesting under the hood
 
-- **PostgreSQL-backed experience replay buffer** — durable across restarts, queryable for offline analysis, no separate Redis/memcached dependency at MVP scale
-- **Reward attribution baked into the schema** — `cart_events.recommendation_context` JSONB tracks which policy and model produced each conversion, enabling honest A/B reporting
-- **Auto-promotion with guard rails** — new model checkpoints are gated on a 10% loss-improvement margin and a minimum step count, preventing thrashing on noise
-- **Dual training triggers** — reactive (every N cart events) and cadence-based (every 60s), serialised through a single mutex to prevent overlap
-- **Stratified minibatch sampling** — guarantees non-zero-reward episodes appear in every batch so view/click noise doesn't drown the gradient signal
-- **Sub-bundle lazy loading** — storefront cold-paint stays under 60KB; the dashboard's recharts dependency only downloads on `/dashboard` navigation
+- **PostgreSQL-backed experience replay buffer** - durable across restarts, queryable for offline analysis, no separate Redis/memcached dependency at MVP scale
+- **Reward attribution baked into the schema** - `cart_events.recommendation_context` JSONB tracks which policy and model produced each conversion, enabling honest A/B reporting
+- **Auto-promotion with guard rails** - new model checkpoints are gated on a 10% loss-improvement margin and a minimum step count, preventing thrashing on noise
+- **Dual training triggers** - reactive (every N cart events) and cadence-based (every 60s), serialised through a single mutex to prevent overlap
+- **Stratified minibatch sampling** - guarantees non-zero-reward episodes appear in every batch so view/click noise doesn't drown the gradient signal
+- **Sub-bundle lazy loading** - storefront cold-paint stays under 60KB; the dashboard's recharts dependency only downloads on `/dashboard` navigation
 
 ## Local development
 
@@ -83,7 +83,7 @@ Frontend on http://localhost:5173.
 
 ## Project structure
 
-
+```bash
 SmartCart/
 ├── backend/
 │   ├── app/
@@ -102,12 +102,12 @@ SmartCart/
 ├── hooks/               # TanStack Query + Zustand wrappers
 ├── pages/               # Lazy-loaded route components
 └── store/               # Zustand stores (auth, session)
-
+```
 
 ## Author
 
 
-**Adejokun Ibukunoluwa** — Lagos, Nigeria
+**Adejokun Ibukunoluwa** - Lagos, Nigeria
 [GitHub](https://github.com/IAdejokun) · [LinkedIn](https://www.linkedin.com/in/adejokun-ibukunoluwa/) · adejokunibk@gmail.com
 
 Built as part of an MSc Computer Science research portfolio demonstrating how
