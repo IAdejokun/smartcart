@@ -83,7 +83,7 @@ Frontend on http://localhost:5173.
 
 ## Project structure
 
-
+```bash
 SmartCart/
 ├── backend/
 │   ├── app/
@@ -102,7 +102,7 @@ SmartCart/
 ├── hooks/               # TanStack Query + Zustand wrappers
 ├── pages/               # Lazy-loaded route components
 └── store/               # Zustand stores (auth, session)
-
+```
 
 ## Author
 
