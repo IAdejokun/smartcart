@@ -4,8 +4,8 @@ An adaptive e-commerce platform built around a Deep Reinforcement Learning agent
 that learns each visitor's preferences in real time. A live A/B dashboard compares
 the DRL agent against a classical collaborative-filtering baseline.
 
-🌐 **Live demo:** https://smartcart-ai.vercel.app
-📊 **Dashboard:** https://smartcart-ai.vercel.app/dashboard (login required)
+🌐 **Live demo:** https://smartcart-ibk.vercel.app
+📊 **Dashboard:** https://smartcart-ibk.vercel.app/dashboard (login required)
 
 ---
 
