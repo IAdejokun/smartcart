@@ -1,15 +1,18 @@
 """Seed the products table from Amazon Reviews 2023.
 
 Can be run:
-  - As a script: python -m scripts.seed_amazon_catalogue
-  - As a function: from scripts.seed_amazon_catalogue import seed; seed()
+  - As a release-phase command: python -m scripts.seed_amazon_catalogue
+  - As a script:                python scripts/seed_amazon_catalogue.py
+  - As a function:              from scripts.seed_amazon_catalogue import seed; seed()
 
-The seed is idempotent — checks for existing products first and skips
-if the catalogue is already populated.
+The seed is idempotent — skips if >= 750 products already exist
+(guards against a partial seed from a previous failed run).
+To force a full reseed, truncate the products table first.
 """
 from __future__ import annotations
 
 import logging
+import os
 import random
 import sys
 from decimal import Decimal
@@ -33,9 +36,21 @@ CATEGORIES = [
     "Toys_and_Games",
 ]
 PRODUCTS_PER_CATEGORY = 160
+SEED_COMPLETE_THRESHOLD = 750   # >= this many rows → already seeded
 
 
 def fetch_category(category: str, limit: int) -> list[dict]:
+    # Pass HF_TOKEN through to the datasets library so authenticated
+    # requests don't hit the unauthenticated rate limit on Render.
+    hf_token = os.environ.get("HF_TOKEN")
+    if hf_token:
+        log.info("HF_TOKEN present — using authenticated HuggingFace requests")
+    else:
+        log.warning(
+            "HF_TOKEN not set — unauthenticated requests may be rate-limited. "
+            "Add HF_TOKEN to your Render environment variables."
+        )
+
     from datasets import load_dataset
 
     log.info("Loading metadata stream for category=%s", category)
@@ -45,6 +60,7 @@ def fetch_category(category: str, limit: int) -> list[dict]:
         split="full",
         trust_remote_code=True,
         streaming=True,
+        token=hf_token,         # None is safe — datasets ignores it
     )
 
     candidates: list[dict] = []
@@ -89,19 +105,29 @@ def fetch_category(category: str, limit: int) -> list[dict]:
 
 
 def seed() -> None:
-    """Run the catalogue seed. Safe to call multiple times — skips if already seeded."""
+    """Run the catalogue seed. Safe to call multiple times."""
     db = SessionLocal()
     try:
         existing = db.scalar(select(func.count()).select_from(Product)) or 0
-        if existing > 0:
+
+        if existing >= SEED_COMPLETE_THRESHOLD:
             log.info(
-                "Products table already has %d rows — skipping seed. "
-                "To force reseed, truncate the products table first.",
+                "✓ Catalogue already complete (%d products ≥ threshold %d). Skipping.",
                 existing,
+                SEED_COMPLETE_THRESHOLD,
             )
             return
 
-        log.info("Starting catalogue seed — this takes 5–10 minutes on first run.")
+        if existing > 0:
+            log.warning(
+                "Partial catalogue detected (%d products). "
+                "Previous seed likely failed mid-run. Continuing from scratch — "
+                "duplicates are handled by ON CONFLICT DO NOTHING.",
+                existing,
+            )
+        else:
+            log.info("Empty catalogue. Starting full seed — takes 5–10 min on first run.")
+
         all_products: list[dict] = []
         for category in CATEGORIES:
             rows = fetch_category(category, PRODUCTS_PER_CATEGORY)
@@ -122,6 +148,16 @@ def seed() -> None:
 
         total = db.scalar(select(func.count()).select_from(Product)) or 0
         log.info("✓ Seed complete. Catalogue size: %d products.", total)
+
+        if total < SEED_COMPLETE_THRESHOLD:
+            log.error(
+                "Seed finished but only %d products were inserted (expected ≥ %d). "
+                "Check HF_TOKEN and HuggingFace rate limits.",
+                total,
+                SEED_COMPLETE_THRESHOLD,
+            )
+            sys.exit(1)   # Non-zero exit aborts the Render release phase → deploy fails
+                          # safely rather than going live with an empty shop.
 
     except KeyboardInterrupt:
         log.warning("Seed interrupted")
