@@ -99,10 +99,9 @@ def create_app() -> FastAPI:
     app.include_router(recommendations.router, prefix="/api/v1")
     app.include_router(telemetry.router, prefix="/api/v1")
 
-    @app.get("/health", tags=["health"])
+    @app.api_route("/health", methods=["GET", "HEAD"], tags=["health"])
     def health() -> dict[str, str]:
         return {"status": "ok", "environment": settings.environment}
-
     return app
 
 
